@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 const TILE = 32;
 
 let player = { x: 1, y: 1 };
-let currentLevel = 0;
+let level = 0;
 let oxygenno = 0;
 const baseoxy = [30, 12, 16, 19, 22];
 let maxoxy = baseoxy[0];
@@ -39,14 +39,14 @@ function move(dx, dy) {
         Particlez(nx, ny, "#eab308"); //gold burst key
     } else if (target === "x") {
         alert("Hull Overheat!");
-        startLevel(currentLevel);
+        startLevel(level);
         return;
     } else if (target === "d") {
         if (hasKey) {
             playt(1046.5, "sine", 0.25); // Sect clear
-            currentLevel++;
-            if (currentLevel < levels.length) {
-                startLevel(currentLevel);
+            level++;
+            if (level < levels.length) {
+                startLevel(level);
             } else {            
                 showlevels();
             }
@@ -63,7 +63,7 @@ function move(dx, dy) {
 
     if (oxygenno >= maxoxy) {
         alert("O2 Depleted! Restarting....."); 
-        startLevel(currentLevel);
+        startLevel(level);
     }
 }
 
@@ -72,11 +72,11 @@ function showlevels(){
     if (choice !== null) {
         let levelNum = parseInt(choice) - 1;
         if (!isNaN(levelNum) && levelNum >= 0 && levelNum <levels.length) {
-            currentLevel = levelNum;
-            startLevel(currentLevel);
+            level = levelNum;
+            startLevel(level);
         } else {
             alert("Invalid level! Restarting from Level 1.");
-            currentLevel = 0;
+            level = 0;
             startLevel(0);
         }
     }
@@ -92,7 +92,7 @@ window.addEventListener("keydown", (e) => {
 let droids =[]; //Active patrol droids
 
 const levels = [
-    // Sect:1 Intro
+    // Level 1 
     [
        "wwwwwwwwwwww",
        "w.p........w",
@@ -105,7 +105,7 @@ const levels = [
 
 
     ],
-    // Sect:2 Laser
+    // Level 2 Laser
     [
         "wwwwwwwwwwww",
         "w.p........w",
@@ -117,7 +117,7 @@ const levels = [
         "w...o.V...kd",
         "wwwwwwwwwwww"
     ],   
-    //Sect:3 Lasers and Firewall
+    //Level 3 Lasers and Firewall
     [
         "wwwwwwwwwwww",
         "w.p.o...w..w",
@@ -129,7 +129,7 @@ const levels = [
         "w........Vkd",
         "wwwwwwwwwwww"
     ],
-    //Sect 4 Droids added
+    //Level 4 Droids 
     [
         "wwwwwwwwwwww",
         "w.p........w",
@@ -140,7 +140,7 @@ const levels = [
         "w.wwww...V.d",
         "wwwwwwwwwwww"
     ],
-    //Sect:5 Final escape
+    //Level 5 Final 
     [
         "wwwwwwwwwwww",
         "w.p..x.o...w",
@@ -153,26 +153,26 @@ const levels = [
     ] 
 
 ];
-// Defining levels
+// levels
 
-let laserActive = false;
-let platePos = { x: 3, y: 3 };
+let laseron = false;
+let platep = { x: 3, y: 3 };
 let lasers = [];
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const audio = new (window.AudioContext || window.webkitAudioContext)();
 
 function playt(freq, type = "square", duration = 0.08) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    if (audio.state === 'suspended') audio.resume();
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
     osc.type = type;
     osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.05, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + duration);
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(audio.destination);
     osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    osc.stop(audio.currentTime + duration);
 }
 
 function droidmove(){
@@ -194,18 +194,18 @@ function droidmove(){
         
     }
 }
-//Check for traps laser, droid, firewall
+//Check traps laser, droid, firewall
 function check() {
-    if (player.x === platePos.x && player.y === platePos.y){
-        laserActive = !laserActive;
+    if (player.x === platep.x && player.y === platep.y){
+        laseron = !laseron;
         playt(523.25, "sine", 0.1);
     }
-    if (laserActive){
+    if (laseron){
         for (let l of lasers) {
             if (player.x === l.x && player.y === l.y) {
                 playt(110, "sawtooth", 0.3);
                 alert("Vaporized by Security Laser ");
-                startLevel(currentLevel);
+                startLevel(level);
                 return;
             }
         }
@@ -214,7 +214,7 @@ function check() {
         if (player.x === d.x && player.y ===d.y){
             playt(120, "sawtooth", 0.3);
             alert("Intercepted by Patrol Droid!");
-            startLevel(currentLevel);
+            startLevel(level);
             return;
         }
     }   
@@ -242,9 +242,9 @@ function startLevel(levelNum) {
     oxygenno = 0;
     maxoxy = baseoxy[levelNum];
     hasKey = false;
-    laserActive = true; // Reset laser 
+    laseron = true; // Reset laser 
     particles = []; 
-    platePos = { x: -1, y: -1 };
+    platep = { x: -1, y: -1 };
     lasers = [];
     droids= []; 
 
@@ -255,7 +255,7 @@ function startLevel(levelNum) {
                 player = { x: c, y: r };
                 grid[r][c] = ".";
             } else if (grid[r][c] === "L") {
-                platePos = { x: c, y: r };
+                platep = { x: c, y: r };
                 grid[r][c] = ".";
             } else if (grid[r][c] === "V") {
                 lasers.push({ x: c, y: r, type: "V" });
@@ -275,7 +275,7 @@ function startLevel(levelNum) {
 }
 
 
-// draw all ofthegraphics
+// draw stuff
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < grid.length; r++) {
@@ -370,12 +370,12 @@ function draw() {
     }
     
     //PrPlate
-    if (platePos.x !== -1) {
-        const gx= platePos.x *TILE;
-        const gy = platePos.y * TILE;
+    if (platep.x !== -1) {
+        const gx= platep.x *TILE;
+        const gy = platep.y * TILE;
         ctx.fillStyle ="#475569";
         ctx.fillRect(gx +4, gy+ 4, 24, 24);
-        ctx.fillStyle = laserActive ? "#c084fc" : "#6b21a8";
+        ctx.fillStyle = laseron ? "#c084fc" : "#6b21a8";
         ctx.fillRect(gx +8, gy+8, 16, 16);        
     }
     
@@ -383,20 +383,20 @@ function draw() {
    for (let l of lasers) {
     const lx = l.x * TILE;
     const ly = l.y * TILE;
-    const color = laserActive ? "#ff0055" : "#475569";
-    const corecolor = laserActive ? "#ffffff": "#64748b";
+    const color = laseron ? "#ff0055" : "#475569";
+    const core = laseron ? "#ffffff": "#64748b";
     
     if (l.type == "V") {
         //Vert Beam
         ctx.fillStyle = color;
         ctx.fillRect(lx + 10, ly + 2, 12, 28);
-        ctx.fillStyle =corecolor;
+        ctx.fillStyle =core;
         ctx.fillRect(lx + 14, ly + 2, 4, 28);
     } else{
         //Horizontal Beam
         ctx.fillStyle = color;
         ctx.fillRect(lx + 2, ly + 10, 28, 12);
-        ctx.fillStyle = corecolor;
+        ctx.fillStyle = core;
         ctx.fillRect(lx + 2, ly + 14, 28, 4);
     }
    }
@@ -469,9 +469,9 @@ function draw() {
     ctx.fillRect(px + 14, py+ 18, 4, 3); //Nose
 
 
-    drawlegend();
+    legend();
 }
-function drawlegend(){
+function legend(){
     const lx =400; 
     let ly = 10;
 
@@ -554,5 +554,5 @@ function gameloop(){
     draw();
     requestAnimationFrame(gameloop);
 }
-startLevel(currentLevel);
+startLevel(level);
 gameloop();
