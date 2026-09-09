@@ -20,7 +20,7 @@ Right: "D"/ "Arrow Right"
 Left: "A"/ "Arrow Left"
 Down: "S"/ "Arrow Down"
 
-🧩 Game Elements
+ Game Elements
 Laika (Player): Our hero.  
 
  Oxygen Tank (+10): Refills 10 units of your oxygen.  
