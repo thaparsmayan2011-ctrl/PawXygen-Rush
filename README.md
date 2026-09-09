@@ -37,6 +37,10 @@ Laika (Player): Our hero.
  Patrol Droid (Hazard): Patrols paths, collision leads to failure!  
 
 
+ WARNING!
+ extract all files before playing. Keep all files in the same folder
+
+
  Laser / Firewall (Hazard): Avoid contact when active!  
 
  Built With
