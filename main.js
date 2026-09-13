@@ -1,13 +1,41 @@
 const canvas = document.getElementById("gc");
 const ctx = canvas.getContext("2d");
-const TILE = 32;
+const TILE = 56;
+
+const bgm = new Audio("bgmusic.mp3");
+bgm.loop =true;
+bgm.volume= 0.25; 
+
+
+
+function canvassize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", canvassize);
+canvassize();
+
 
 let player = { x: 1, y: 1 };
 let level = 0;
 let oxygenno = 0;
-const baseoxy = [30, 12, 16, 19, 22];
+let state= "MENU"; 
+const baseoxy = [30, 12, 16, 19, 22, 20, 16, 21];
 let maxoxy = baseoxy[0];
 let hasKey = false;
+let unlocked =0; //levels unlocked
+
+const characters =[
+    {name: "Laika", type: "dog", color: "#d97706", suit: "#e2e8f0", accent: "#b45309", desc: "The space dog!"},
+    {name: "Rocket", type: "raccoon", color: "#475569", suit: "#f1f5f9", accent: "#ea580c", desc: "A Guardian of The Galaxy!"},
+    {name: "Mort", type: "monkey", color: "#a16207", suit: "#fed7aa", accent: "#713f12", desc: "Cosmic primate crusader!"},
+    {name: "Larry", type: "cat", color: "#9333ea", suit: "#f3e8ff", accent: "#581c87", desc: "Larry"},
+    {name: "Michelangelo", type: "turtle", color: "#15803d", suit: "#dcfce7", accent: "#ea580c", desc: "Teenage mutant?"}
+];
+
+let charIndex =0;
+let levelIndex = 0;
+let selectedChar= characters[0];
 
 function update() {
    document.getElementById("o2").innerText = maxoxy - oxygenno;
@@ -44,11 +72,14 @@ function move(dx, dy) {
     } else if (target === "d") {
         if (hasKey) {
             playt(1046.5, "sine", 0.25); // Sect clear
+            if (level >= unlocked && unlocked < levels.length -1){
+                unlocked++;
+            }
             level++;
             if (level < levels.length) {
                 startLevel(level);
             } else {            
-                showlevels();
+                state = "LEVELS";
             }
             return;
         } else {
@@ -83,10 +114,52 @@ function showlevels(){
 }
 
 window.addEventListener("keydown", (e) => {
-    if (e.key === "w" || e.key==="ArrowUp") move(0, -1);
-    if (e.key === "s" || e.key === "ArrowDown") move(0, 1);
-    if (e.key === "a" || e.key === "ArrowLeft") move(-1, 0);
-    if (e.key === "d" || e.key ==="ArrowRight") move(1, 0);
+    BGM(); //play da music
+    if (e.key ==="m" || e.key=== "M"){
+        bgm.muted = !bgm.muted;
+    }
+    if (state ==="MENU") {
+        if (e.code === "Space" || e.code=== "Enter"){
+          state = "SELECT"; 
+        }
+        return;
+    }
+    if (state=== "SELECT"){
+        if (e.key=== "ArrowLeft"){
+            charIndex= (charIndex-1 + characters.length) % characters.length;
+        } else if (e.key === "ArrowRight") {
+            charIndex= (charIndex+1)%characters.length;
+        } else if (e.code=== "Enter"|| e.code ==="Space"){
+            selectedChar = characters[charIndex];
+            state= "LEVELS";
+        }
+        return;
+    }
+
+    if (state === "LEVELS"){
+        if (e.key=== "ArrowUp"){
+            levelIndex =(levelIndex-1 + levels.length) % levels.length;            
+        } else if (e.key === "ArrowDown"){
+            levelIndex =(levelIndex +1) % levels.length;
+        } else if (e.code === "Enter" || e.code== "Space"){
+            if (levelIndex <= unlocked){
+                level = levelIndex;
+                state= "PLAYING";
+                startLevel(level);
+            }else{
+                playt(150, "sawtooth", 0.1);
+            }
+        }
+        return;
+    }
+
+    if (state ==="PLAYING"){
+        if (e.key === "w" || e.key==="ArrowUp") move(0, -1);
+        if (e.key === "s" || e.key === "ArrowDown") move(0, 1);
+        if (e.key === "a" || e.key === "ArrowLeft") move(-1, 0);
+        if (e.key === "d" || e.key ==="ArrowRight") move(1, 0);
+    }    
+
 });
 
 let droids =[]; //Active patrol droids
@@ -140,7 +213,7 @@ const levels = [
         "w.wwww...V.d",
         "wwwwwwwwwwww"
     ],
-    //Level 5 Final 
+    //Level 5 more droids 
     [
         "wwwwwwwwwwww",
         "w.p..x.o...w",
@@ -150,7 +223,39 @@ const levels = [
         "w.o..V.D.k.w",
         "w.wwww.www.d",
         "wwwwwwwwwwww"
-    ] 
+    ],
+    //Level 6 
+    [
+        "wwwwwwwwwwww",
+        "w.p...w....w",
+        "w.www.w.ww.w",
+        "w.o.H.V.H.kw",
+        "w.www.w.ww.w",
+        "w.L...w....w",
+        "w.wwwwwwww.d",
+        "wwwwwwwwwwww"
+    ],
+    //lvel 7
+    [
+        "wwwwwwwwwwww",
+        "w.p.o.w....w",
+        "w.www.w.ww.w",
+        "w...D...D.kw",
+        "w.ww.ww.ww.w",
+        "w.L..o.V...w",
+        "w.wwwwwwww.d",
+        "wwwwwwwwwwww"
+    ],
+    [
+    // level 8 final
+        "wwwwwwwwwwww",
+        "w.p.x.o.x..w",
+        "w.w.w.w.w.ww",
+        "w.L.D.V.D.kw",
+        "w.o.x.H.x..w",
+        "w.wwwwwwww.d",
+        "wwwwwwwwwwww"
+    ]
 
 ];
 // levels
@@ -160,6 +265,15 @@ let platep = { x: 3, y: 3 };
 let lasers = [];
 
 const audio = new (window.AudioContext || window.webkitAudioContext)();
+
+function BGM() {
+    if (audio.state=== 'suspended'){
+        audio.resume();
+    }
+    if (bgm.paused) {
+        bgm.play().catch(e => console.log("Autoplay waiting for user input", e));
+    }
+}
 
 function playt(freq, type = "square", duration = 0.08) {
     if (audio.state === 'suspended') audio.resume();
@@ -226,8 +340,8 @@ let particles = [];
 function Particlez(x, y, color) {
     for (let i = 0; i < 8; i++) {
         particles.push({
-            x: x * TILE + 16,
-            y: y * TILE + 16,
+            x: (Math.floor(Math.max(20, (canvas.width- ((grid[0] ? grid[0].length: 12) *TILE + 180))/2)) + x*TILE) + 16,
+            y: (Math.floor(Math.max(60, (canvas.height - ((grid.length || 8) * TILE))/2)) +y * TILE) + 16,
             vx: (Math.random() - 0.5) * 4,
             vy: (Math.random() - 0.5) * 4,
             life: 10,
@@ -238,7 +352,7 @@ function Particlez(x, y, color) {
 
 function startLevel(levelNum) {
     grid = levels[levelNum].map(row => row.split(""));    
-    canvas.height = grid.length*TILE;
+    canvassize()
     oxygenno = 0;
     maxoxy = baseoxy[levelNum];
     hasKey = false;
@@ -248,7 +362,8 @@ function startLevel(levelNum) {
     lasers = [];
     droids= []; 
 
-
+    const offsetx =Math.floor(Math.max(20, (canvas.width- ((grid[0] ? grid[0].length : 12) *TILE +180))/2));
+    const offsety= Math.floor(Math.max(60, (canvas.height - ((grid.length || 8)*TILE))/2));
     for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[r].length; c++) {
             if (grid[r][c] === "p") {
@@ -278,129 +393,208 @@ function startLevel(levelNum) {
 // draw stuff
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.textAlign ="center";
+
+    if (state=== "MENU"){
+        ctx.fillStyle= "#0f172a";
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 36px monospace";
+        ctx.fillText("PAWXYGEN RUSH", canvas.width/ 2, canvas.height / 2-40);
+
+        ctx.fillStyle = "#38bdf8";
+        ctx.font= "16px monospace";
+        ctx.fillText("Press Space or Arrow Keys to Start", canvas.width / 2, canvas.height/ 2+ 10);
+        return;
+    }
+
+    if (state ==="SELECT"){
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "bold 28px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("CHOOSE YOUR CHARACTER", canvas.width/2, canvas.height/2 - 80);
+
+        let c = characters[charIndex];
+        ctx.fillStyle =c.color;
+        ctx.font = "bold 22px monospace";
+        ctx.fillText(`> ${c.name} <`, canvas.width/2, canvas.height/2 -20);
+        chardraw(canvas.width / 2-24, canvas.height / 2-10, 1.5, c);
+
+        ctx.fillStyle = "#94a38b";
+        ctx.font = "14px monospace";
+        ctx.fillText("Use LEFT/RIGHT arrows to switch, ENTER to select", canvas.width/2, canvas.height/2 +80);
+        return;
+    }
+
+    if (state === "LEVELS"){
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+
+        ctx.fillStyle ="#f8fafc";
+        ctx.font = "bold 28px monospace";
+        ctx.textAlign= "center";
+        ctx.fillText("SELECT MISSION", canvas.width/2, canvas.height/2 -140);
+    
+        for (let i =0; i< levels.length; i++ ) {
+            let isUnlocked =i<= unlocked;
+            ctx.fillStyle = isUnlocked ? (i=== levelIndex ? "#38bdf8" : "#f8fafc") : "#475569"; 
+            let statusText = isUnlocked ? `Level ${i+1}`: `Level ${i+ 1} [LOCKED]`;
+            if (i=== levelIndex) statusText = `> ${statusText}<`;
+            ctx.font ="16px monospace";
+            ctx.fillText(statusText, canvas.width/2, canvas.height/2-90 + (i*24));
+        }   
+        
+        ctx.fillStyle="#38bdf8";
+        ctx.font= "14px monospace";
+        ctx.fillText("Use UP/DOWN arrows to choose, ENTER to launch", canvas.width/2, canvas.height/2 +130); 
+        return;   
+    }
+
+    ctx.textAlign = "left";
+    const gridcols = grid[0] ? grid[0].length : 12;
+    const gridrows = grid.length || 8;
+    const gridwidth = gridcols *TILE;
+    const gridheight = gridrows* TILE;
+
+    const totalwidth = gridwidth +180;
+    const offsetx = Math.floor(Math.max(20, (canvas.width -totalwidth)/2));
+    const offsety =Math.floor(Math.max(60, (canvas.height - gridheight)/2));
+    const s = TILE/32;
+
     for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[r].length; c++) {
             const tile = grid[r][c];
+            const gx = offsetx + c*TILE;
+            const gy = offsety+ r* TILE;
         
-            ctx.fillStyle = "#0f172a"; // Default background color
-            ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
-
+            ctx.fillStyle = "#0f172a"; // Default bg color
+            
+            
+            
             if (tile === "w") { 
                 ctx.fillStyle = "#1e293b";
-                ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
+                ctx.fillRect(offsetx + c* TILE, offsety+ r * TILE, TILE, TILE);
                 ctx.strokeStyle = "#334155";
-                ctx.strokeRect(c * TILE + 2, r * TILE + 2, TILE - 4, TILE - 4);
+                const pad =Math.round(2*s);
+                ctx.strokeRect(gx+pad, gy+ pad, TILE -pad*2, TILE -pad*2);
             }    
             else if (tile === "o") { 
                 //Oxygen tanks
-                const ox = c*TILE;
-                const oy = r* TILE;
+                const ox = gx;
+                const oy = gy;
                 ctx.fillStyle ="#06b6d4";//body
-                ctx.fillRect(ox + 10, oy+ 10,12, 16);
+                ctx.fillRect(ox + 10 *s, oy+ 10 *s,12* s, 16 * s);
                 ctx.fillStyle ="#94a3b8"; //Cap
-                ctx.fillRect(ox + 12, oy +6, 8,4);
+                ctx.fillRect(ox + 12 *s, oy +6* s, 8 *s,4*s);
                 ctx.fillStyle = "#67e8f9"; //Glass
-                ctx.fillRect(ox + 13, oy+13,6, 6);
+                ctx.fillRect(ox + 13*s, oy+13 *s,6 * s, 6* s);
                 //oxygen tube/pipe
                 ctx.strokeStyle = "#a5f3fc";
-                ctx.lineWidth=2;
+                ctx.lineWidth=2*s;
                 ctx.beginPath();
-                ctx.moveTo(ox +18, oy + 8);
-                ctx.bezierCurveTo(ox + 26, oy +8, ox+26, oy+ 22, ox + 22, oy +24);
+                ctx.moveTo(ox +18 * s, oy + 8 *s);
+                ctx.bezierCurveTo(ox + 26 * s, oy +8 *s, ox+26 * s, oy+ 22 * s, ox + 22 * s, oy +24 * s);
                 ctx.stroke();
             }    
                 
                 
             else if (tile === "k") { 
                 //Key
-                const kx = c*TILE;
-                const ky = r*TILE;
+                const kx = gx;
+                const ky = gy;
                 ctx.fillStyle = "#eab308";
                 ctx.beginPath();
-                ctx.arc(kx + 12, ky +14, 5,0, Math.PI*2);//Ring part thing
+                ctx.arc(kx + 12 *s, ky +14*s, 5 *s,0, Math.PI*2);//Ring part thing
                 ctx.fill();
-                ctx.fillRect(kx +16, ky + 13,10,3);//Main shaft
+                ctx.fillRect(kx +16 *s, ky + 13*s,10 * s,3 * s);//Main shaft
                 //key gaps
-                ctx.fillRect(kx+22, ky + 16, 3,4);
-                ctx.fillRect(kx +19, ky + 16,2,3);
+                ctx.fillRect(kx+22 * s, ky + 16 * s, 3 * s,4*s);
+                ctx.fillRect(kx +19*s, ky + 16*s,2 * s,3* s);
              }
             else if (tile === "d") {
                 //door
-                const dx =c*TILE;
-                const dy = r*TILE;
+                const dx = gx;
+                const dy = gy;
                 //Metl Frame
                 ctx.fillStyle = "#1e293b";
-                ctx.fillRect(dx +2, dy+2, 28, 28);
+                ctx.fillRect(dx +2 *s, dy+2 *s, 28 *s, 28*s);
 
                 //Inner part
                 ctx.fillStyle = "#0f172a";
-                ctx.fillRect(dx +5, dy + 5,22, 22);
+                ctx.fillRect(dx +5*s, dy + 5*s,22*s, 22 *s);
                 
                 //Shiutter opening vertically
                 ctx.fillStyle = "#334155";
-                ctx.fillRect(dx + 6, dy +6, 9, 20); //Left
-                ctx.fillRect(dx + 17, dy +6, 9, 20); //Right
+                ctx.fillRect(dx + 6 *s, dy +6*s, 9 *s, 20* s); //Left
+                ctx.fillRect(dx + 17* s, dy +6* s, 9*s, 20*s); //Right
 
                 //Highlights
                 ctx.fillStyle = "#475569";
-                ctx.fillRect(dx +7, dy + 8,7, 16);
-                ctx.fillRect(dx +18, dy + 8,7, 16);
+                ctx.fillRect(dx +7 * s, dy + 8*s,7*s, 16*s);
+                ctx.fillRect(dx +18*s, dy + 8 *s,7 *s, 16*s);
                 
                 //Warning stripes
                 ctx.fillStyle = "#eab308";
-                ctx.fillRect(dx +4, dy +2,4,3);
-                ctx.fillRect(dx + 24, dy + 2, 4,3);
-                ctx.fillRect(dx +4, dy +27, 4,3);
-                ctx.fillRect(dx +24, dy + 27, 4,3);
+                ctx.fillRect(dx +4 *s, dy +2 *s,4*s,3*s);
+                ctx.fillRect(dx + 24* s, dy + 2 *s, 4 * s,3*s);
+                ctx.fillRect(dx +4*s, dy +27*s, 4*s,3*s);
+                ctx.fillRect(dx +24*s, dy + 27*s, 4 * s,3 * s);
 
                 //Indicator green if player has the key
                 ctx.fillStyle = hasKey ? "#10b981": "#ef4444";
-                ctx.fillRect(dx + 12, dy +3, 8, 3);
+                ctx.fillRect(dx + 12 *s, dy +3*s, 8*s, 3*s);
             
 
 
             }    
             else if (tile === "x") { 
                 ctx.fillStyle ="#ef4444";
-                ctx.fillRect(c* TILE +4, r* TILE +4, 24, 24);
+                ctx.fillRect(gx +4*s, gy +4 *s, 24 *s, 24*s);
                 ctx.fillStyle = "#fca5a5";
-                ctx.fillRect(c* TILE + 8, r* TILE+8, 16, 16);
+                ctx.fillRect(gx + 8* s, gy+8 * s, 16 * s, 16*s);
             }
         }    
     }
     
     //PrPlate
     if (platep.x !== -1) {
-        const gx= platep.x *TILE;
-        const gy = platep.y * TILE;
+        const gx= offsetx +platep.x *TILE;
+        const gy = offsety +platep.y * TILE;
         ctx.fillStyle ="#475569";
-        ctx.fillRect(gx +4, gy+ 4, 24, 24);
+        ctx.fillRect(gx +4 * s, gy+ 4*s, 24*s, 24*s);
         ctx.fillStyle = laseron ? "#c084fc" : "#6b21a8";
-        ctx.fillRect(gx +8, gy+8, 16, 16);        
+        ctx.fillRect(gx +8*s, gy+8*s, 16*s, 16*s);        
     }
     
     //Laser
    for (let l of lasers) {
-    const lx = l.x * TILE;
-    const ly = l.y * TILE;
+    const lx = offsetx +l.x * TILE;
+    const ly = offsety + l.y * TILE;
     const color = laseron ? "#ff0055" : "#475569";
     const core = laseron ? "#ffffff": "#64748b";
     
     if (l.type == "V") {
         //Vert Beam
         ctx.fillStyle = color;
-        ctx.fillRect(lx + 10, ly + 2, 12, 28);
+        ctx.fillRect(lx + 10 *s, ly + 2*s, 12*s, 28* s);
         ctx.fillStyle =core;
-        ctx.fillRect(lx + 14, ly + 2, 4, 28);
+        ctx.fillRect(lx + 14*s, ly + 2* s, 4* s, 28* s);
     } else{
         //Horizontal Beam
         ctx.fillStyle = color;
-        ctx.fillRect(lx + 2, ly + 10, 28, 12);
+        ctx.fillRect(lx + 2 * s, ly + 10 * s, 28* s, 12*s);
         ctx.fillStyle = core;
-        ctx.fillRect(lx + 2, ly + 14, 28, 4);
+        ctx.fillRect(lx + 2 * s, ly + 14* s, 28*s, 4*s);
     }
    }
 
+   const px= offsetx+ player.x*TILE;
+   const py= offsety+ player.y*TILE;
+   chardraw(px, py, s, selectedChar);
    
     //Particle 
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -415,65 +609,211 @@ function draw() {
 
     // Patrol Droids design
     for (let d of droids){
-        const dx =d.x *TILE;
-        const dy= d.y* TILE;
+        const dx = offsetx +d.x *TILE;
+        const dy= offsety+ d.y* TILE;
         ctx.fillStyle = "#64748b"
-        ctx.fillRect(dx + 6, dy +6, 20, 20); //Metal Chassis
+        ctx.fillRect(dx + 6 * s, dy +6 * s, 20*s, 20* s); //Metal Chassis
         ctx.fillStyle ="#ef4444";
-        ctx.fillRect(dx +10, dy +12, 12, 4)//Red visor
+        ctx.fillRect(dx +10 *s, dy +12 *s, 12*s, 4*s)//Red visor
         ctx.fillStyle = "#0284c7"
-        ctx.fillRect(dx+14, dy+ 2, 4, 4); //Beacon
+        ctx.fillRect(dx+14* s, dy+ 2 *s, 4*s, 4* s); //Beacon
     }
-    //Laika Upgrded design, final
-    const px = player.x * TILE;
-    const py = player.y * TILE;
-    //Additions and spacesuit
-    //Tail
-    ctx.strokeStyle = "#d97706";
-    ctx.lineWidth =3;
+
+    legend(offsetx + gridwidth + 30, offsety);
+}
+
+function chardraw(px, py, s, c){
+    if (c.type=== "raccoon"){
+        drawrocket(px, py, s);
+        return;
+    }
+    //Suit nd tail
+    ctx.strokeStyle =c.color;
+    ctx.lineWidth = 3*s;
     ctx.beginPath();
-    ctx.arc(px+ 6, py+ 20, 6, Math.PI *0.5, Math.PI* 1.5, false);
+    ctx.arc(px +6*s, py +20 * s, 6* s, Math.PI * 0.5, Math.PI *1.5, false);
     ctx.stroke();
 
-    //Oval space suit
-    ctx.fillStyle="#e2e8f0";
+    //suit body
+    ctx.fillStyle = c.suit;
     ctx.beginPath();
-    ctx.ellipse(px +16, py + 26,9,6, 0, 0, Math.PI*2, false)
+    ctx.ellipse(px +16 *s, py +26*s, 9*s, 6*s, 0,0, Math.PI *2, false);
     ctx.fill();
 
-    //Collar
-    ctx.fillStyle = "#0284c7"
-    ctx.fillRect(px + 8, py +20, 16,2);
-
-
-    // Bubble 
-    ctx.fillStyle ="rgba(56, 189, 248, 0.35)";
-    ctx.beginPath();
-    ctx.arc(px +16, py +13, 11, 0, Math.PI *2);
-    ctx.fill();
-    //Dog Head
-    ctx.fillStyle = "#d97706"; //fur
-    ctx.beginPath();
-    ctx.arc(px +16, py+15, 8, 0, Math.PI * 2);
-    ctx.fill();
-    //Ears
-    ctx.fillStyle = "#b45309";
-    ctx.fillRect(px +6, py+ 10, 4, 7);
-    ctx.fillRect(px + 22, py +10, 4, 7);
     
-    //Nose and Eyes
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(px +12, py + 14, 3, 3);//Left eye
-    ctx.fillRect(px + 17, py +14, 3, 3); //Right eye
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(px + 14, py+ 18, 4, 3); //Nose
 
+    //head
+    ctx.fillStyle = c.color;
+    ctx.beginPath();
+    ctx.arc(px+16*s, py +15 * s, 8*s, 0, Math.PI *2);
+    ctx.fill();
 
-    legend();
+    // main specific parts
+    if (c.type === "dog"){
+        //Laika
+        ctx.fillStyle = c.accent;
+        ctx.fillRect(px + 6 *s, py +10*s, 4*s, 7*s);
+        ctx.fillRect(px+22*s, py +10*s, 4*s, 7*s);
+        ctx.fillStyle= "#0f172a";
+        ctx.fillRect(px+11*s, py+ 13* s, 2 *s, 3* s);
+        ctx.fillRect(px + 19*s, py+13*s, 2*s, 3 * s);
+        ctx.fillRect(px+14*s, py + 16*s, 4*s, 2*s);
+    }
+    else if (c.type ==="monkey"){
+        //Mort
+        ctx.fillStyle =c.accent;
+        ctx.beginPath();
+        ctx.arc(px+6*s, py +14*s, 4*s, 0, Math.PI*2);
+        ctx.arc(px +26*s, py+14*s, 4*s, 0, Math.PI*2);
+        ctx.fill();
+        //biggie eyes
+        ctx.fillStyle= "#fef08a";
+        ctx.fillRect(px +10*s, py+12*s, 5*s, 5*s);
+        ctx.fillRect(px +17*s, py +12*s, 5*s, 5 *s);
+
+        //pupils
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(px+ 12*s, py+13 *s, 2*s, 3*s);
+        ctx.fillRect(px+18*s, py+13 * s, 2*s, 3*s);
+
+    }
+    else if(c.type=== "cat") {
+        //Larry
+        ctx.fillStyle = c.color;
+        ctx.beginPath();
+        ctx.moveTo(px +8*s, py +14*s);
+        ctx.lineTo(px+ 6 *s, py +6*s);
+        ctx.lineTo(px +13 *s, py +10*s);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(px +24*s, py+14*s);
+        ctx.lineTo(px+26*s, py+6 *s);
+        ctx.lineTo(px+19*s, py+10* s);
+        ctx.fill();
+        ctx.fillStyle="#a7f3d0";
+        ctx.fillRect(px+11*s, py + 13 *s, 3*s, 3*s);
+        ctx.fillRect(px+ 18*s, py+ 13*s, 3*s, 3*s);
+        ctx.fillStyle= "#0f172a";
+        ctx.fillRect(px + 12*s, py+ 13*s, 1*s, 3*s);
+        ctx.fillRect(px+19 *s, py+ 13 * s, 1*s, 3*s);
+        ctx.fillStyle= "#f472b6";
+        ctx.fillRect(px+15*s, py+17*s, 2*s, 1*s);
+    } 
+    else if (c.type=== "turtle"){
+        //Michelangelo w bandana
+        ctx.fillStyle= c.accent; // Orange
+        ctx.fillRect(px+8*s, py+12* s, 16*s, 4*s);
+        //bndana
+        ctx.fillRect(px+23*s, py+14 * s, 5*s, 2*s);
+        ctx.fillRect(px+24*s, py +16*s, 5*s, 2*s);
+        
+        //eyes
+        ctx.fillStyle ="#ffff";
+        ctx.fillRect(px+10*s, py+13*s, 3*s, 2*s);
+        ctx.fillRect(px+ 19*s, py+13*s, 3*s, 2*s);
+        ctx.fillStyle ="#0f172a";
+        ctx.fillRect(px+11*s, py+ 13*s, 1*s, 2*s);
+        ctx.fillRect(px+20* s, py+13 * s, 1*s, 2*s);
+    } 
+    
+    //Collar
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(px +8*s, py+20* s, 16*s, 2*s);
+
+    //Bubble
+    ctx.fillStyle = "rgba(56, 189, 248, 0.35)";
+    ctx.beginPath();
+    ctx.arc(px +16*s, py +13*s, 11*s, 0, Math.PI *2);
+    ctx.fill();
+    
+
 }
-function legend(){
-    const lx =400; 
-    let ly = 10;
+
+function drawrocket(px,py,s){
+    //tail
+    ctx.strokeStyle="#475569";
+    ctx.lineWidth= 5*s;
+    ctx.beginPath();
+    ctx.arc(px +4*s, py+22 *s, 7*s, Math.PI* 0.4, Math.PI *1.4, false);
+    ctx.stroke();
+    //stripe
+    ctx.strokeStyle= "#0f172a";
+    ctx.lineWidth= 3*s;
+    ctx.strokeRect(px+1*s, py+ 18* s, 4*s, 3*s);
+
+    //orange suit
+    ctx.fillStyle= "#ea580c";
+    ctx.beginPath();
+    ctx.ellipse(px+16 *s, py+26*s, 9*s, 6*s, 0, 0, Math.PI*2, false);
+    ctx.fill();
+
+    //collar nd straps
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(px+8* s, py+20* s, 16*s, 3*s);
+    ctx.fillStyle = "#fbbf24"; //brass thingy
+    ctx.fillRect(px+14 *s, py +20*s, 4*s,3*s);
+
+    
+
+    //ears
+    //left
+    ctx.fillStyle= "#475569";
+    ctx.beginPath();
+    ctx.moveTo(px+7* s, py+13*s);
+    ctx.lineTo(px+5*s, py+4*s);
+    ctx.lineTo(px+12 * s, py+8* s);
+    ctx.fill();
+    ctx.fillStyle= "#fca5a5";
+    ctx.fillRect(px+ 7* s, py+7 * s, 2*s, 3*s);
+
+    //right
+    ctx.fillStyle = "#475569";
+    ctx.beginPath();
+    ctx.moveTo(px+25 * s, py+12*s);
+    ctx.lineTo(px+27*s, py+4*s);
+    ctx.lineTo(px +20*s, py+8*s);
+    ctx.fill();
+    ctx.fillStyle= "#fca5a5";
+    ctx.fillRect(px+ 23*s, py+7*s, 2*s, 3*s);
+    
+
+    //head
+    ctx.fillStyle="#475569";
+    ctx.beginPath();
+    ctx.arc(px+16*s, py+ 15*s, 8*s,0, Math.PI*2);
+    ctx.fill();
+
+    //cheeks
+    ctx.fillStyle ="#f8fafc";
+    ctx.fillRect(px+ 10*s, py+ 16*s, 12*s, 5*s);
+
+
+    // dark patches
+    ctx.fillStyle ="#0f172a";
+    ctx.beginPath();
+    ctx.ellipse(px+12*s, py +14*s, 4*s, 3*s, -0.2, 0, Math.PI*2);
+    ctx.ellipse(px+20* s, py+14 * s, 4*s, 3*s, 0.2, 0, Math.PI*2);
+    ctx.fill();
+
+    //eye and nose
+    ctx.fillStyle = "#fbbf24";//eyes
+    ctx.fillRect(px +11*s, py +13* s, 2*s, 2*s);
+    ctx.fillRect(px+19*s, py +13 * s, 2*s, 2*s);
+
+    ctx.fillStyle="#000000"; //nose
+    ctx.fillRect(px+14 * s, py + 17*s, 4*s, 3*s);
+
+    //bubble
+    ctx.fillStyle= "rgba(56, 189, 248, 0.35)";
+    ctx.beginPath();
+    ctx.arc(px+ 16*s, py+13*s, 12*s, 0, Math.PI*2);
+    ctx.fill();
+
+
+}
+
+function legend(lx, ly){
+    
 
     //Legend title
     ctx.fillStyle ="#f8fafc";
@@ -554,5 +894,5 @@ function gameloop(){
     draw();
     requestAnimationFrame(gameloop);
 }
-startLevel(level);
+
 gameloop();
