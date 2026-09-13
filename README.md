@@ -1,5 +1,5 @@
 # PawXygen-Rush
-PawXygen Rush is a grid puzzle game built with HTML5 Canvas and  JavaScript. You play as Laika the space dog, and navigate through different puzzles to help her escape and come back home!
+PawXygen Rush is a grid puzzle game built with HTML5 Canvas and  JavaScript. You play as various characters like Laika the space dog and Rocket raccoon, and navigate through different puzzles to help her escape and come back home!
 
 
 
@@ -21,7 +21,7 @@ Left: "A"/ "Arrow Left"
 Down: "S"/ "Arrow Down"
 
  Game Elements
-Laika (Player): Our hero.  
+Laika (Player): Our hero. Along with Rocket, Mort, Larry and Michelangelo.  
 
  Oxygen Tank (+10): Refills 10 units of your oxygen.  
 
