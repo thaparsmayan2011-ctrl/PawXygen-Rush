@@ -15,15 +15,17 @@ Evade security traps.
  
  Controls
 WASD and Arrow keys
-Up: "W"/ "Arrow Up"
-Right: "D"/ "Arrow Right"
-Left: "A"/ "Arrow Left"
-Down: "S"/ "Arrow Down"
+Up: W/ Arrow Up
+Right: D/ Arrow Right
+Left: A/ Arrow Left
+Down: S/ Arrow Down
 
  Game Elements
 Laika (Player): Our hero. Along with Rocket, Mort, Larry and Michelangelo.  
 
- Oxygen Tank (+10): Refills 10 units of your oxygen.  
+ Oxygen Tank (+10): Refills 10 units of your oxygen. 
+
+ Timer: Finish the level within 25 secs.
 
  Access Key: Needed to unlock the exit door.  
 
@@ -35,6 +37,8 @@ Laika (Player): Our hero. Along with Rocket, Mort, Larry and Michelangelo.
 
 
  Patrol Droid (Hazard): Patrols paths, collision leads to failure!  
+
+ 13 levels.
 
 
  WARNING!
